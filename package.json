@@ -1,0 +1,21 @@
+{
+  "name": "shop",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Shared Square-backed shop components (Astro) for Hygiene & SGSS. Theme-agnostic; no secrets.",
+  "license": "UNLICENSED",
+  "private": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./components/*": "./src/components/*",
+    "./lib/*": "./src/lib/*"
+  },
+  "files": ["src"],
+  "peerDependencies": {
+    "astro": ">=5.0.0"
+  },
+  "devDependencies": {
+    "astro": "^5.0.0",
+    "typescript": "^5.6.0"
+  }
+}
