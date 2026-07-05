@@ -1,5 +1,5 @@
 {
-  "name": "shop",
+  "name": "@cl/shop",
   "version": "0.1.0",
   "type": "module",
   "description": "Shared Square-backed shop components (Astro) for Hygiene & SGSS. Theme-agnostic; no secrets.",
