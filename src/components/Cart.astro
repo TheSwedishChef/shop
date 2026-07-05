@@ -60,17 +60,22 @@
     if (linesEl) {
       linesEl.innerHTML = lines.map((l: CartLine) => `
         <li class="cart-line">
-          ${l.image ? `<img class="cart-line__img" src="${esc(l.image)}" alt="" />` : ""}
-          <div class="cart-line__info">
+          ${l.image
+            ? `<img class="cart-line__img" src="${esc(l.image)}" alt="" />`
+            : `<span class="cart-line__img cart-line__img--ph"></span>`}
+          <div class="cart-line__main">
             <span class="cart-line__name">${esc(l.name)}</span>
-            <span class="cart-line__price">${fmt(l.price)}</span>
+            <span class="cart-line__unit">${fmt(l.price)} each</span>
+            <span class="cart-line__qty">
+              <button type="button" data-dec="${esc(l.id)}" aria-label="Decrease quantity">&minus;</button>
+              <span class="cart-line__qtynum">${l.qty}</span>
+              <button type="button" data-inc="${esc(l.id)}" aria-label="Increase quantity">+</button>
+            </span>
           </div>
-          <div class="cart-line__qty">
-            <button type="button" data-dec="${esc(l.id)}" aria-label="Decrease quantity">&minus;</button>
-            <span>${l.qty}</span>
-            <button type="button" data-inc="${esc(l.id)}" aria-label="Increase quantity">+</button>
-          </div>
-          <button type="button" class="cart-line__rm" data-rm="${esc(l.id)}" aria-label="Remove ${esc(l.name)}">&times;</button>
+          <span class="cart-line__amounts">
+            <span class="cart-line__total">${fmt({ amount: l.price.amount * l.qty, currency: l.price.currency })}</span>
+            <button type="button" class="cart-line__rm" data-rm="${esc(l.id)}" aria-label="Remove ${esc(l.name)}">Remove</button>
+          </span>
         </li>`).join("");
     }
   }
@@ -129,17 +134,44 @@
   .cart-x { font: inherit; font-size: 1.5rem; line-height: 1; background: 0; border: 0; cursor: pointer; color: inherit; }
   .cart-empty { padding: 1.5rem 1.1rem; opacity: 0.7; }
   .cart-lines { list-style: none; margin: 0; padding: 0.5rem 0.6rem; overflow-y: auto; flex: 1; }
-  .cart-line { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 0.6rem; padding: 0.5rem; }
-  .cart-line__img { width: 44px; height: 44px; object-fit: cover; border-radius: 4px; }
-  .cart-line__info { display: flex; flex-direction: column; min-width: 0; }
-  .cart-line__name { font-weight: 600; }
-  .cart-line__price { font-size: 0.85em; opacity: 0.8; }
-  .cart-line__qty { display: inline-flex; align-items: center; gap: 0.4rem; }
-  .cart-line__qty button { font: inherit; width: 1.6em; height: 1.6em; border: 1px solid var(--shop-rule, #ccc); background: 0; border-radius: 4px; cursor: pointer; color: inherit; }
-  .cart-line__rm { font: inherit; font-size: 1.1rem; background: 0; border: 0; cursor: pointer; color: inherit; opacity: 0.6; }
+  /* .cart-line* styles live in the global block below (injected via innerHTML). */
   .cart-foot { padding: 1rem 1.1rem; border-top: 1px solid var(--shop-rule, #e6e6e6); }
-  .cart-subtotal { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 0.75rem; }
+  .cart-subtotal { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 0.75rem; font-variant-numeric: tabular-nums; }
   .cart-checkout { width: 100%; font: inherit; font-weight: 700; cursor: pointer; padding: 0.75rem; border: 0; border-radius: var(--shop-radius, 8px); background: var(--shop-accent, #004cef); color: #fff; }
   .cart-note { margin: 0.5rem 0 0; font-size: 0.75rem; opacity: 0.65; text-align: center; }
   @media (prefers-reduced-motion: reduce) { .cart-drawer { transition: none; } }
+</style>
+
+<style is:global>
+  /* Cart lines are injected via innerHTML, so these must be global (Astro's scoped
+     styles never reach dynamically-created nodes). Receipt layout: thumb + title
+     left, amounts right-aligned with tabular figures. */
+  .cart-line {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.2rem;
+    border-bottom: 1px solid var(--shop-rule, #eee);
+  }
+  .cart-line:last-child { border-bottom: 0; }
+  .cart-line__img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+  .cart-line__img--ph { background: var(--shop-rule, #eee); }
+  .cart-line__main { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .cart-line__name { font-weight: 600; line-height: 1.2; }
+  .cart-line__unit { font-size: 0.75rem; opacity: 0.6; }
+  .cart-line__qty { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
+  .cart-line__qty button {
+    font: inherit; width: 1.5em; height: 1.5em; line-height: 1;
+    border: 1px solid var(--shop-rule, #ccc); background: transparent;
+    border-radius: 4px; cursor: pointer; color: inherit;
+  }
+  .cart-line__qtynum { font-variant-numeric: tabular-nums; min-width: 1ch; text-align: center; }
+  .cart-line__amounts { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+  .cart-line__total { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cart-line__rm {
+    font: inherit; font-size: 0.72rem; background: 0; border: 0; padding: 0;
+    cursor: pointer; color: inherit; opacity: 0.55; text-decoration: underline;
+  }
+  .cart-line__rm:hover { opacity: 0.9; }
 </style>
