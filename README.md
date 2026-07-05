@@ -29,15 +29,17 @@ import ProductGrid from "@cl/shop/components/ProductGrid.astro";
 Fix a bug here once → both sites pick it up on their next build.
 
 ### Local development
-Because the two sites are separate repos, use `npm link` to work against local source:
+All repos live side by side in `~/Sites` (`~/Sites/Shop`, `~/Sites/sgss`, `~/Sites/hygiene`)
+— **not** in iCloud, which evicts `node_modules`. Vite's dev server doesn't follow
+`npm link`'s double-symlink for scoped `.astro` subpaths, so each site links to local
+source with a **direct symlink**, wired as an npm script:
 
 ```bash
-cd ~/Sites/Shop && npm link          # register @cl/shop globally
-cd <a-site> && npm link @cl/shop     # point the site at your local copy
+cd ~/Sites/sgss && npm run link:shop   # symlinks node_modules/@cl/shop -> ../../../Shop
 ```
 
-(Re-run the site's `npm link @cl/shop` after any `npm install`, which restores the
-git-dependency copy.)
+Re-run it after any `npm install` (which restores the git-dependency copy). CI/Cloudflare
+use the `github:` dependency and need no linking.
 
 ## Theming contract
 Components only read `--shop-*` tokens (with neutral fallbacks). A site maps its own
