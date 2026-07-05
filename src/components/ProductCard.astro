@@ -25,7 +25,7 @@ const href = `${basePath}/${product.slug}`;
     {soldOut ? (
       <span class="shop-card__badge">Sold out</span>
     ) : (
-      <AddToCartButton product={product} />
+      <AddToCartButton product={product} basePath={basePath} />
     )}
   </div>
 </div>

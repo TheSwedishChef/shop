@@ -61,10 +61,10 @@
       linesEl.innerHTML = lines.map((l: CartLine) => `
         <li class="cart-line">
           ${l.image
-            ? `<img class="cart-line__img" src="${esc(l.image)}" alt="" />`
+            ? `<a class="cart-line__imglink" href="${esc(l.href)}"><img class="cart-line__img" src="${esc(l.image)}" alt="" /></a>`
             : `<span class="cart-line__img cart-line__img--ph"></span>`}
           <div class="cart-line__main">
-            <span class="cart-line__name">${esc(l.name)}</span>
+            <a class="cart-line__name" href="${esc(l.href)}">${esc(l.name)}</a>
             <span class="cart-line__unit">${fmt(l.price)} each</span>
             <span class="cart-line__qty">
               <button type="button" data-dec="${esc(l.id)}" aria-label="Decrease quantity">&minus;</button>
@@ -88,7 +88,7 @@
     const d = el.dataset;
     if (el.hasAttribute("data-add-to-cart")) {
       addItem({
-        id: d.id!, slug: d.slug!, name: d.name!,
+        id: d.id!, slug: d.slug!, name: d.name!, href: d.href!,
         price: { amount: Number(d.amount), currency: d.currency! },
         image: d.image || undefined,
       });
@@ -157,8 +157,10 @@
   .cart-line:last-child { border-bottom: 0; }
   .cart-line__img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
   .cart-line__img--ph { background: var(--shop-rule, #eee); }
+  .cart-line__imglink { display: block; }
   .cart-line__main { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-  .cart-line__name { font-weight: 600; line-height: 1.2; }
+  .cart-line__name { font-weight: 600; line-height: 1.2; color: inherit; text-decoration: none; }
+  .cart-line__name:hover { text-decoration: underline; }
   .cart-line__unit { font-size: 0.75rem; opacity: 0.6; }
   .cart-line__qty { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
   .cart-line__qty button {

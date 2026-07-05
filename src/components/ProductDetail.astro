@@ -23,7 +23,7 @@ const { product, basePath = "/shop" } = Astro.props;
       <h1 class="shop-detail__name">{product.name}</h1>
       <p class="shop-detail__price">{formatMoney(product.price)}</p>
       {product.description && <p class="shop-detail__desc">{product.description}</p>}
-      <AddToCartButton product={product} />
+      <AddToCartButton product={product} basePath={basePath} />
     </div>
   </div>
 </article>

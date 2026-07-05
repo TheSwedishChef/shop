@@ -5,6 +5,7 @@ export interface CartLine {
   id: string;
   slug: string;
   name: string;
+  href: string; // product page URL, so the cart can link back
   price: Money;
   image?: string;
   qty: number;

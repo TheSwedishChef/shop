@@ -4,10 +4,12 @@ import type { Product } from "../lib/types";
 interface Props {
   product: Product;
   label?: string;
+  basePath?: string;
 }
 
-const { product, label = "Add to cart" } = Astro.props;
+const { product, label = "Add to cart", basePath = "/shop" } = Astro.props;
 const soldOut = !product.inStock || product.quantity === 0;
+const href = `${basePath}/${product.slug}`;
 ---
 
 {soldOut ? (
@@ -19,6 +21,7 @@ const soldOut = !product.inStock || product.quantity === 0;
     data-add-to-cart
     data-id={product.id}
     data-slug={product.slug}
+    data-href={href}
     data-name={product.name}
     data-amount={String(product.price.amount)}
     data-currency={product.price.currency}
