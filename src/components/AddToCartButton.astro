@@ -1,0 +1,48 @@
+---
+import type { Product } from "../lib/types";
+
+interface Props {
+  product: Product;
+  label?: string;
+}
+
+const { product, label = "Add to cart" } = Astro.props;
+const soldOut = !product.inStock || product.quantity === 0;
+---
+
+{soldOut ? (
+  <button class="shop-atc" type="button" disabled>Sold out</button>
+) : (
+  <button
+    class="shop-atc"
+    type="button"
+    data-add-to-cart
+    data-id={product.id}
+    data-slug={product.slug}
+    data-name={product.name}
+    data-amount={String(product.price.amount)}
+    data-currency={product.price.currency}
+    data-image={product.image?.src ?? ""}
+  >{label}</button>
+)}
+
+<style>
+  .shop-atc {
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.55rem 1.1rem;
+    border: 0;
+    border-radius: var(--shop-radius, 8px);
+    background: var(--shop-accent, #004cef);
+    color: #fff;
+    white-space: nowrap;
+    transition: filter 0.12s ease;
+  }
+  .shop-atc:hover { filter: brightness(1.06); }
+  .shop-atc[disabled] {
+    cursor: default;
+    background: var(--shop-soldout-bg, #333);
+    opacity: 0.75;
+  }
+</style>

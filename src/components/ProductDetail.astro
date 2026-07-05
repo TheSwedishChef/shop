@@ -1,6 +1,7 @@
 ---
 import type { Product } from "../lib/types";
 import { formatMoney } from "../lib/money";
+import AddToCartButton from "./AddToCartButton.astro";
 
 interface Props {
   product: Product;
@@ -8,7 +9,6 @@ interface Props {
 }
 
 const { product, basePath = "/shop" } = Astro.props;
-const soldOut = !product.inStock || product.quantity === 0;
 ---
 
 <article class="shop-detail">
@@ -23,15 +23,7 @@ const soldOut = !product.inStock || product.quantity === 0;
       <h1 class="shop-detail__name">{product.name}</h1>
       <p class="shop-detail__price">{formatMoney(product.price)}</p>
       {product.description && <p class="shop-detail__desc">{product.description}</p>}
-
-      {soldOut ? (
-        <p class="shop-detail__soldout">Sold out</p>
-      ) : (
-        <!-- Checkout is wired to Square in Phase 3; data-product-id is the hook. -->
-        <button class="shop-detail__buy" type="button" data-product-id={product.id}>
-          Buy &middot; {formatMoney(product.price)}
-        </button>
-      )}
+      <AddToCartButton product={product} />
     </div>
   </div>
 </article>
@@ -65,22 +57,4 @@ const soldOut = !product.inStock || product.quantity === 0;
     color: var(--shop-accent, #004cef);
   }
   .shop-detail__desc { margin: 0 0 1.5rem; line-height: 1.5; }
-  .shop-detail__buy {
-    font: inherit;
-    cursor: pointer;
-    padding: 0.7rem 1.4rem;
-    border: 0;
-    border-radius: var(--shop-radius, 8px);
-    background: var(--shop-accent, #004cef);
-    color: #fff;
-  }
-  .shop-detail__buy:hover { filter: brightness(1.06); }
-  .shop-detail__soldout {
-    display: inline-block;
-    padding: 0.6rem 1rem;
-    border-radius: 999px;
-    font-weight: 700;
-    background: var(--shop-soldout-bg, #333);
-    color: var(--shop-soldout-ink, #fff);
-  }
 </style>

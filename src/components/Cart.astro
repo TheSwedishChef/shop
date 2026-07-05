@@ -1,0 +1,145 @@
+---
+// Self-contained cart: a floating toggle (with count), a slide-in drawer, and the
+// client logic. Drop <Cart /> once in a layout; any [data-add-to-cart] button feeds it.
+// Checkout is a placeholder until Square (Phase 3).
+---
+
+<button class="cart-toggle" type="button" data-cart-open aria-label="Open cart">
+  <span class="cart-toggle__label">Cart</span>
+  <span class="cart-count" data-cart-count hidden>0</span>
+</button>
+
+<div class="cart-backdrop" data-cart-backdrop hidden></div>
+
+<aside class="cart-drawer" data-cart-drawer aria-label="Shopping cart" aria-hidden="true">
+  <header class="cart-head">
+    <h2 class="cart-title">Cart</h2>
+    <button class="cart-x" type="button" data-cart-close aria-label="Close cart">&times;</button>
+  </header>
+  <p class="cart-empty" data-cart-empty>Your cart is empty.</p>
+  <ul class="cart-lines" data-cart-lines></ul>
+  <footer class="cart-foot">
+    <div class="cart-subtotal"><span>Subtotal</span><span data-cart-subtotal>$0.00</span></div>
+    <button class="cart-checkout" type="button" data-cart-checkout>Checkout</button>
+    <p class="cart-note">Secure checkout via Square — coming soon.</p>
+  </footer>
+</aside>
+
+<script>
+  import { getCart, addItem, setQty, count, subtotal, CART_EVENT, type CartLine } from "../lib/cart.ts";
+
+  const fmt = (m: { amount: number; currency: string }) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: m.currency }).format(m.amount / 100);
+
+  const drawer = document.querySelector<HTMLElement>("[data-cart-drawer]");
+  const backdrop = document.querySelector<HTMLElement>("[data-cart-backdrop]");
+  const linesEl = document.querySelector<HTMLElement>("[data-cart-lines]");
+  const emptyEl = document.querySelector<HTMLElement>("[data-cart-empty]");
+  const countEl = document.querySelector<HTMLElement>("[data-cart-count]");
+  const subtotalEl = document.querySelector<HTMLElement>("[data-cart-subtotal]");
+
+  function open() {
+    drawer?.classList.add("is-open");
+    drawer?.setAttribute("aria-hidden", "false");
+    if (backdrop) backdrop.hidden = false;
+  }
+  function close() {
+    drawer?.classList.remove("is-open");
+    drawer?.setAttribute("aria-hidden", "true");
+    if (backdrop) backdrop.hidden = true;
+  }
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+
+  function render() {
+    const lines = getCart();
+    const n = count();
+    if (countEl) { countEl.textContent = String(n); countEl.hidden = n === 0; }
+    if (emptyEl) emptyEl.hidden = lines.length > 0;
+    if (subtotalEl) subtotalEl.textContent = fmt(subtotal());
+    if (linesEl) {
+      linesEl.innerHTML = lines.map((l: CartLine) => `
+        <li class="cart-line">
+          ${l.image ? `<img class="cart-line__img" src="${esc(l.image)}" alt="" />` : ""}
+          <div class="cart-line__info">
+            <span class="cart-line__name">${esc(l.name)}</span>
+            <span class="cart-line__price">${fmt(l.price)}</span>
+          </div>
+          <div class="cart-line__qty">
+            <button type="button" data-dec="${esc(l.id)}" aria-label="Decrease quantity">&minus;</button>
+            <span>${l.qty}</span>
+            <button type="button" data-inc="${esc(l.id)}" aria-label="Increase quantity">+</button>
+          </div>
+          <button type="button" class="cart-line__rm" data-rm="${esc(l.id)}" aria-label="Remove ${esc(l.name)}">&times;</button>
+        </li>`).join("");
+    }
+  }
+
+  document.addEventListener("click", (e) => {
+    const el = (e.target as Element | null)?.closest<HTMLElement>(
+      "[data-add-to-cart],[data-cart-open],[data-cart-close],[data-cart-backdrop],[data-inc],[data-dec],[data-rm],[data-cart-checkout]"
+    );
+    if (!el) return;
+    const d = el.dataset;
+    if (el.hasAttribute("data-add-to-cart")) {
+      addItem({
+        id: d.id!, slug: d.slug!, name: d.name!,
+        price: { amount: Number(d.amount), currency: d.currency! },
+        image: d.image || undefined,
+      });
+      open();
+    } else if (el.hasAttribute("data-cart-open")) open();
+    else if (el.hasAttribute("data-cart-close") || el.hasAttribute("data-cart-backdrop")) close();
+    else if (d.inc !== undefined) { const l = getCart().find((x) => x.id === d.inc); setQty(d.inc, (l?.qty ?? 0) + 1); }
+    else if (d.dec !== undefined) { const l = getCart().find((x) => x.id === d.dec); setQty(d.dec, (l?.qty ?? 1) - 1); }
+    else if (d.rm !== undefined) setQty(d.rm, 0);
+    else if (el.hasAttribute("data-cart-checkout")) alert("Secure Square checkout is wired up in the next phase.");
+  });
+
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  window.addEventListener(CART_EVENT, render);
+  render();
+</script>
+
+<style>
+  .cart-toggle {
+    position: fixed; z-index: 50; top: 1rem; right: 1rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font: inherit; font-weight: 600; cursor: pointer;
+    padding: 0.5rem 0.9rem; border: 0; border-radius: 999px;
+    background: var(--shop-ink, #222); color: var(--shop-bg, #fff);
+  }
+  .cart-count {
+    min-width: 1.3em; padding: 0 0.35em; border-radius: 999px;
+    background: var(--shop-accent, #004cef); color: #fff;
+    font-size: 0.8em; text-align: center;
+  }
+  .cart-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4); }
+  .cart-drawer {
+    position: fixed; z-index: 70; top: 0; right: 0; height: 100dvh; width: min(380px, 92vw);
+    display: flex; flex-direction: column;
+    background: var(--shop-bg, #fff); color: var(--shop-ink, #222);
+    border-left: 1px solid var(--shop-rule, #e6e6e6);
+    transform: translateX(100%); transition: transform 0.22s ease;
+    font-family: var(--shop-font, inherit);
+  }
+  .cart-drawer.is-open { transform: translateX(0); }
+  .cart-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.1rem; border-bottom: 1px solid var(--shop-rule, #e6e6e6); }
+  .cart-title { margin: 0; font-size: 1.1rem; }
+  .cart-x { font: inherit; font-size: 1.5rem; line-height: 1; background: 0; border: 0; cursor: pointer; color: inherit; }
+  .cart-empty { padding: 1.5rem 1.1rem; opacity: 0.7; }
+  .cart-lines { list-style: none; margin: 0; padding: 0.5rem 0.6rem; overflow-y: auto; flex: 1; }
+  .cart-line { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 0.6rem; padding: 0.5rem; }
+  .cart-line__img { width: 44px; height: 44px; object-fit: cover; border-radius: 4px; }
+  .cart-line__info { display: flex; flex-direction: column; min-width: 0; }
+  .cart-line__name { font-weight: 600; }
+  .cart-line__price { font-size: 0.85em; opacity: 0.8; }
+  .cart-line__qty { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .cart-line__qty button { font: inherit; width: 1.6em; height: 1.6em; border: 1px solid var(--shop-rule, #ccc); background: 0; border-radius: 4px; cursor: pointer; color: inherit; }
+  .cart-line__rm { font: inherit; font-size: 1.1rem; background: 0; border: 0; cursor: pointer; color: inherit; opacity: 0.6; }
+  .cart-foot { padding: 1rem 1.1rem; border-top: 1px solid var(--shop-rule, #e6e6e6); }
+  .cart-subtotal { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 0.75rem; }
+  .cart-checkout { width: 100%; font: inherit; font-weight: 700; cursor: pointer; padding: 0.75rem; border: 0; border-radius: var(--shop-radius, 8px); background: var(--shop-accent, #004cef); color: #fff; }
+  .cart-note { margin: 0.5rem 0 0; font-size: 0.75rem; opacity: 0.65; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .cart-drawer { transition: none; } }
+</style>
