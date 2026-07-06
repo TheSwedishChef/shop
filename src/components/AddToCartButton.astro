@@ -40,9 +40,12 @@ const href = `${basePath}/${product.slug}`;
     background: var(--shop-accent, #004cef);
     color: #fff;
     white-space: nowrap;
-    transition: filter 0.12s ease;
+    min-height: 44px; /* comfortable touch target */
+    transition: filter 0.12s ease, transform 0.08s ease;
   }
   .shop-atc:hover { filter: brightness(1.06); }
+  .shop-atc:active { transform: translateY(1px); }
+  .shop-atc:focus-visible { outline: 2px solid var(--shop-ink, #222); outline-offset: 2px; }
   .shop-atc[disabled] {
     cursor: default;
     background: var(--shop-soldout-bg, #333);
