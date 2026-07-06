@@ -49,7 +49,8 @@
     if (backdrop) backdrop.hidden = true;
   }
 
-  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+  const esc = (s: string | null | undefined) =>
+    String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
 
   function render() {
     const lines = getCart();
@@ -58,13 +59,15 @@
     if (emptyEl) emptyEl.hidden = lines.length > 0;
     if (subtotalEl) subtotalEl.textContent = fmt(subtotal());
     if (linesEl) {
-      linesEl.innerHTML = lines.map((l: CartLine) => `
+      linesEl.innerHTML = lines.map((l: CartLine) => {
+        const href = l.href || (l.slug ? `/shop/${l.slug}` : "#");
+        return `
         <li class="cart-line">
           ${l.image
-            ? `<a class="cart-line__imglink" href="${esc(l.href)}"><img class="cart-line__img" src="${esc(l.image)}" alt="" /></a>`
+            ? `<a class="cart-line__imglink" href="${esc(href)}"><img class="cart-line__img" src="${esc(l.image)}" alt="" /></a>`
             : `<span class="cart-line__img cart-line__img--ph"></span>`}
           <div class="cart-line__main">
-            <a class="cart-line__name" href="${esc(l.href)}">${esc(l.name)}</a>
+            <a class="cart-line__name" href="${esc(href)}">${esc(l.name)}</a>
             <span class="cart-line__unit">${fmt(l.price)} each</span>
             <span class="cart-line__qty">
               <button type="button" data-dec="${esc(l.id)}" aria-label="Decrease quantity">&minus;</button>
@@ -76,7 +79,8 @@
             <span class="cart-line__total">${fmt({ amount: l.price.amount * l.qty, currency: l.price.currency })}</span>
             <button type="button" class="cart-line__rm" data-rm="${esc(l.id)}" aria-label="Remove ${esc(l.name)}">Remove</button>
           </span>
-        </li>`).join("");
+        </li>`;
+      }).join("");
     }
   }
 
