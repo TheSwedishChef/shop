@@ -1,13 +1,19 @@
 ---
-// Self-contained cart: a floating toggle (with count), a slide-in drawer, and the
-// client logic. Drop <Cart /> once in a layout; any [data-add-to-cart] button feeds it.
+// Self-contained cart: an optional floating toggle, a slide-in drawer, and the client
+// logic. Drop <Cart /> once in a layout; any [data-add-to-cart] button feeds it.
+// Pass showToggle={false} to provide your own cart trigger elsewhere (e.g. a nav) —
+// give it `data-cart-open` and a `[data-cart-count]` element for the badge.
 // Checkout is a placeholder until Square (Phase 3).
+interface Props { showToggle?: boolean }
+const { showToggle = true } = Astro.props;
 ---
 
-<button class="cart-toggle" type="button" data-cart-open aria-label="Open cart">
-  <span class="cart-toggle__label">Cart</span>
-  <span class="cart-count" data-cart-count hidden>0</span>
-</button>
+{showToggle && (
+  <button class="cart-toggle" type="button" data-cart-open aria-label="Open cart">
+    <span class="cart-toggle__label">Cart</span>
+    <span class="cart-count" data-cart-count hidden>0</span>
+  </button>
+)}
 
 <div class="cart-backdrop" data-cart-backdrop hidden></div>
 
