@@ -34,17 +34,19 @@ function baseUrl(cfg: SquareConfig): string {
 }
 
 /** Build a config from environment variables (Node build or Workers `env`). */
-export function configFromEnv(env: Record<string, string | undefined> = process.env): SquareConfig {
-  const token = env.SQUARE_ACCESS_TOKEN;
-  const locationId = env.SQUARE_LOCATION_ID;
+export function configFromEnv(env?: Record<string, string | undefined>): SquareConfig {
+  // Fall back to process.env without depending on @types/node for the typecheck.
+  const source = env ?? ((globalThis as any).process?.env as Record<string, string | undefined>) ?? {};
+  const token = source.SQUARE_ACCESS_TOKEN;
+  const locationId = source.SQUARE_LOCATION_ID;
   if (!token || !locationId) {
     throw new Error("Missing SQUARE_ACCESS_TOKEN or SQUARE_LOCATION_ID");
   }
   return {
     token,
     locationId,
-    environment: (env.SQUARE_ENV as "sandbox" | "production") || "sandbox",
-    version: env.SQUARE_VERSION || DEFAULT_VERSION,
+    environment: (source.SQUARE_ENV as "sandbox" | "production") || "sandbox",
+    version: source.SQUARE_VERSION || DEFAULT_VERSION,
   };
 }
 

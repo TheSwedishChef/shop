@@ -10,9 +10,21 @@ interface Props {
 const { product, label = "Add to cart", basePath = "/shop" } = Astro.props;
 const soldOut = !product.inStock || product.quantity === 0;
 const href = `${basePath}/${product.slug}`;
+// External fulfillment: when a buy_url is set, hand off to it and bypass the cart
+// entirely (print-on-demand / third-party). Takes precedence over stock — those
+// items aren't stocked by us, so "sold out" never applies.
+const external = product.buyUrl?.trim();
 ---
 
-{soldOut ? (
+{external ? (
+  <a
+    class="shop-atc shop-atc--external"
+    href={external}
+    target="_blank"
+    rel="noopener nofollow"
+    data-buy-external
+  >Buy Now <span aria-hidden="true">&rarr;</span></a>
+) : soldOut ? (
   <button class="shop-atc" type="button" disabled>Sold out</button>
 ) : (
   <button
@@ -31,8 +43,13 @@ const href = `${basePath}/${product.slug}`;
 
 <style>
   .shop-atc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35em;
     font: inherit;
     font-weight: 600;
+    text-decoration: none;
     cursor: pointer;
     padding: 0.55rem 1.1rem;
     border: 0;
