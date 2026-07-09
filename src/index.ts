@@ -4,3 +4,13 @@
 export * from "./lib/types";
 export { formatMoney } from "./lib/money";
 export { mockCatalog } from "./mock/catalog";
+export {
+  getCommerce,
+  getInventoryCounts,
+  createCheckoutLink,
+  configFromEnv,
+  type SquareConfig,
+  type Commerce,
+  type CheckoutLineItem,
+  type CheckoutOptions,
+} from "./lib/square";

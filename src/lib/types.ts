@@ -23,4 +23,10 @@ export interface Product {
   inStock: boolean;
   /** null = inventory not tracked (unlimited); a number = tracked quantity. */
   quantity?: number | null;
+  /**
+   * Optional external product URL (Square item "Buy URL" custom attribute). When
+   * set, the storefront renders a "Buy Now →" link straight to it and bypasses the
+   * cart entirely — for print-on-demand / third-party fulfillment (IngramSpark, Lulu…).
+   */
+  buyUrl?: string;
 }
