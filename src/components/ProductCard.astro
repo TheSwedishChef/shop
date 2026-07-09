@@ -9,7 +9,6 @@ interface Props {
 }
 
 const { product, basePath = "/shop" } = Astro.props;
-const soldOut = !product.inStock || product.quantity === 0;
 const href = `${basePath}/${product.slug}`;
 ---
 
@@ -22,11 +21,7 @@ const href = `${basePath}/${product.slug}`;
   </a>
   <div class="shop-card__foot">
     <span class="shop-card__price">{formatMoney(product.price)}</span>
-    {soldOut ? (
-      <span class="shop-card__badge">Sold out</span>
-    ) : (
-      <AddToCartButton product={product} basePath={basePath} />
-    )}
+    <AddToCartButton product={product} basePath={basePath} />
   </div>
 </div>
 
@@ -72,13 +67,4 @@ const href = `${basePath}/${product.slug}`;
     padding: 0.75rem 0.9rem 0.9rem;
   }
   .shop-card__price { font-weight: 700; color: var(--shop-accent, #004cef); }
-  .shop-card__badge {
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    background: var(--shop-soldout-bg, #333);
-    color: var(--shop-soldout-ink, #fff);
-  }
 </style>
